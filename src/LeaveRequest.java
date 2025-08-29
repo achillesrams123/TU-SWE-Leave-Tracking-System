@@ -1,68 +1,69 @@
-public class LeaveRequest {
-    private int requestId;
-    private Employee employee;
-    private String startDate;
-    private String endDate;
-    private String status;
+import java.util.ArrayList;
 
-    // Constructor
-    public LeaveRequest(int requestId, Employee employee, String startDate, String endDate) {
+public abstract class LeaveRequest implements Approvable {
+    protected int requestId;
+    protected Employee employee;
+    protected String startDate;
+    protected String endDate;
+    protected String status;
+    protected String leaveType;
+
+    protected ArrayList<StatusChange> statusHistory = new ArrayList<>();
+
+    public LeaveRequest(int requestId, Employee employee, String startDate, String endDate, String leaveType) {
         this.requestId = requestId;
         this.employee = employee;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.status = "Pending"; // default status
+        this.leaveType = leaveType;
+        this.status = "Pending";
     }
-    
-    // Approve/Deny Methods
-    public void approve() {
+
+    public boolean approve(String approverName) {
         this.status = "Approved";
+        statusHistory.add(new StatusChange("Approved", java.time.LocalDate.now().toString(), approverName));
+        System.out.println("Request #" + requestId + " approved by " + approverName);
+        return true;
     }
 
-    public void deny() {
+    public boolean deny(String approverName, String reason) {
         this.status = "Denied";
+        statusHistory.add(new StatusChange("Denied", java.time.LocalDate.now().toString(), approverName));
+        System.out.println("Request #" + requestId + " denied by " + approverName + ". Reason: " + reason);
+        return true;
     }
 
-    // Getters and Setters
-    public int getRequestId() {
-        return requestId;
+    public abstract int calculateLeaveDays();
+    public boolean processRequest() {
+        System.out.println("Processing generic leave request...");
+        return true;
     }
 
-    public void setRequestId(int requestId) {
-        this.requestId = requestId;
+    public void printStatusHistory() {
+        System.out.println("---- Status History for Request #" + requestId + " ----");
+        for (StatusChange sc : statusHistory) {
+            System.out.println(" -> Status set to '" + sc.newStatus + "' by " + sc.changedBy + " on " + sc.changeDate);
+        }
+        System.out.println("------------------------------------");
     }
 
-    public Employee getEmployee() {
-        return employee;
-    }
+    public int getRequestId() { return requestId; }
+    public Employee getEmployee() { return employee; }
+    public String getStartDate() { return startDate; }
+    public String getEndDate() { return endDate; }
+    public String getStatus() { return status; }
+    public String getLeaveType() { return leaveType; }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
+    // Inner class
+    public class StatusChange {
+        private String newStatus;
+        private String changeDate;
+        private String changedBy;
 
-    public String getStartDate() {
-        return startDate;
+        public StatusChange(String newStatus, String changeDate, String changedBy) {
+            this.newStatus = newStatus;
+            this.changeDate = changeDate;
+            this.changedBy = changedBy;
+        }
     }
-
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-   
 }
